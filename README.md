@@ -10,8 +10,8 @@ If you don't have an AWS account already, go to aws.amazon.com and register a ne
 
 You will want to follow [best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) when securing your new AWS root account. The main topics to pay attention to here are:
 
-* Lock away your AWS account root user access keys
-* Enable MFA
+* Lock away your AWS account root user access keys.
+* Enable MFA.
 
 ## Create IAM roles
 
@@ -25,8 +25,8 @@ This role will allow our [EC2 instance](#Create-an-EC2-instance) to talk to our 
 2. Click on roles in the sidebar and *Create New Role*. 
 3. Choose EC2 as the use case. 
 4. Select the policy named *AmazonEC2RoleforAWSCodeDeploy* . 
-5. Skip setting tags
-6. Set name to be something like *EC2CodeDeployRole*
+5. Skip setting tags.
+6. Set name to be something like *EC2CodeDeployRole*.
 7. Create!
 
 ### CodeDeploy Role
@@ -37,8 +37,8 @@ This role will allow our CodeDeploy service to talk to our EC2 instance. The pol
 2. Click on roles in the sidebar and *Create New Role*. 
 3. Choose CodeDeploy as the use case. 
 4. There is only one policy available here: *AWSCodeDeployRole*. 
-5. Skip setting tags
-6. Set name to be something like *CodeDeployRole*
+5. Skip setting tags.
+6. Set name to be something like *CodeDeployRole*.
 7. Create!
 
 ------
@@ -51,7 +51,7 @@ Your roles should look like this now:
 
 An Elastic Cloud Compute (EC2) instance is the type of cloud server we are used to. We can create a fully functional Linux machine and configure things like performance, storage, startup scripts, and [much more](https://aws.amazon.com/ec2).  EC2 sets itself apart from competitors by having the option to be highly scalable (elastic).  Most of the instance choices we make here are to stay within the [free tier](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-free-tier.html) limits.
 
-1. Navigate to the EC2 service and click *Launch Service*
+1. Navigate to the EC2 service and click *Launch Service*.
 2. Choose image type as Amazon Linux 2 AMI. The image is the operating system and some default software.
 3. Choose instance type as t2 micro. This is the hardware the server will run on.
 
@@ -72,13 +72,13 @@ sudo ./install auto
 
 4. Add storage. Use the default Elastic Block Storage (EBS) configuration here.
 
-5. Add tags. Add a name for the EC2 instance: `name : ExpressApp`
+5. Add tags. Add a name for the EC2 instance: `name : ExpressApp` .
 
-6. Configure security groups
+6. Configure security groups.
 
-* SSH : port 22: source `0.0.0.0/0`
-* HTTP: port 80, source: anywhere (`0.0.0.0/0, ::/0`)
-* Custom TCP: Port 3000 (this is our express app), source: anywhere (`0.0.0.0/0, ::/0`)
+* SSH : port 22: source `0.0.0.0/0` .
+* HTTP: port 80, source: anywhere (`0.0.0.0/0, ::/0`) .
+* Custom TCP: Port 3000 (this is our express app), source: anywhere (`0.0.0.0/0, ::/0`) .
 
 7. Review instance config before launching and select a key pair. You may want to create a new pair here to avoid key re-use. Save this key (`.pem`) to a secure location.
 8. Launch instance!
@@ -105,11 +105,11 @@ The next step is to configure the CodeDeploy and CodePipeline services to automa
 
 ### CodeDeploy
 
-1. Navigate to the CodeDeploy Service
+1. Navigate to the CodeDeploy Service.
 2. Create new application. Name it *express-app* and select EC2/On-prem.
-3. Create a deployment group named express-app-group
+3. Create a deployment group named express-app-group.
 
-3. Set service role using the CodeDeploy IAM role created earlier
+3. Set service role using the CodeDeploy IAM role created earlier.
 
 4. Set Deployment type to be in-place - the simplest.
 
@@ -127,17 +127,17 @@ After creating the CodeDeploy application, you should see this:
 1. Navigate to *Pipeline* in the CodeDeploy sidebar.
 2. Configure pipeline initial settings. Set `name: express-app-pipeline`, and everything else as default.
 
-2. Add source provider as GitHub v2 since our code is on GitHub
+2. Add source provider as GitHub v2 since our code is on GitHub.
 
 3. Create a connection. Set `name: express-app-connection`. Click install new app then sign in with GitHub and select the express repo.
 
-4. Choose the express repo and branch (main)
-5. Skip the build stage config
+4. Choose the express repo and branch (main).
+5. Skip the build stage config.
 6. Add the deploy stage as CodeDeploy and select our app and deployment group.
 
 7. Create pipeline!
 
-Optional: You can review details and pipeline events by clicking on *View Events*
+Optional: You can review details and pipeline events by clicking on *View Events*.
 
 You should see this if succesful:
 
@@ -147,8 +147,8 @@ You should see this if succesful:
 
 If everything was set up correctly, you should now be able to find your app on the world wide web.
 
-1. Copy EC2 URL into the browser and go to port 3000 and /products
-2. Make changes to the app (e.g. change version text in `app.js`) and push to GitHub main branch
+1. Copy EC2 URL into the browser and go to port `3000` and `/products` .
+2. Make changes to the app (e.g. change version text in `app.js`) and push to GitHub main branch.
 3. Check CodeDeploy in the AWS management console to see a new deployment in progress.
 4. Refresh the app page in your browser to see the update.
 
@@ -156,16 +156,16 @@ If everything was set up correctly, you should now be able to find your app on t
 
 ## Create a budget
 
-If this is a new AWS account, you will be in the free tier. However even the free tier has limits. Jeff needs to make a living somehow.
+If this is a new AWS account, you will be in the free tier. However even the free tier has limits. Jeff needs to make a living somehow. Free tier accounts will be automatically notified with usage alerts when the service usage exceeds 80% of free tier quota. You can also see your *Top Free Tier Services by Usage* on your Billing homepage. For more details, see:
 
-* Free tier accounts will be automatically notified with usage alerts when the service usage exceeds 80% of free tier quota. You can also see your *Top Free Tier Services by Usage* on your Billing homepage. For more details, see:
-  * https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/free-tier-limits.html
-  * https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/tracking-free-tier-usage.html
-* You can set up a daily budget to test other alert thresholds.
+* https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/free-tier-limits.html
+* https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/tracking-free-tier-usage.html
 
-1. Navigate to Budgets
-2. create new budget
-3. Set period to daily
+You can set up a daily budget to test other alert thresholds.
+
+1. Navigate to Budgets.
+2. Create new budget.
+3. Set period to daily.
 4. Set usage amount to 4hrs. Now if your EC2 instance is running nonstop, you should get alerts every day. You can modify this once you are confident with how AWS budgets work.
 
 ------
@@ -178,6 +178,8 @@ I also created a video to talk about how to fix some of the common CodeDeploy fa
 ```
 ApplicationStop failed with exit code 1
 ```
+
+
 
 ```
 The overall deployment failed because too many individual instances failed deployment, too few healthy instances are available for deployment, or some instances in your deployment group are experiencing problems.
