@@ -45,7 +45,7 @@ This role will allow our CodeDeploy service to talk to our EC2 instance. The pol
 
 Your roles should look like this now:
 
-<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/master/docs/IAM-roles.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/main/docs/IAM-roles.png" alt="urls" width="800">
 
 ## Create an EC2 instance
 
@@ -87,7 +87,7 @@ sudo ./install auto
 
 In your EC2 instance dashboard, you should see this:
 
-<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/master/docs/ec2-instance.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/main/docs/ec2-instance.png" alt="urls" width="800">
 
 ## Testing instance
 
@@ -97,7 +97,7 @@ There's not too much testing we need to do at this point other than check that w
 2. `ssh -i /path/my-key.pem my-instance-user-name@my-instance-public-dns-name` Replace the placeholders with your key file name and your instance details. The default EC2 instance user is `ec2-user`. The public DNS name can be found by going to *EC2* > *Instances* , clicking on your instance, and reading the *Public IPv4 DNS* name.
 3. If everything is successful, you should be able to connect to your new box! If its not successful, happy googling :)
 
-<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/master/docs/ssh.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/main/docs/ssh.png" alt="urls" width="800">
 
 ## Configure deployment infrastructure
 
@@ -120,7 +120,7 @@ The next step is to configure the CodeDeploy and CodePipeline services to automa
 
 After creating the CodeDeploy application, you should see this:
 
-<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/master/docs/codedeploy.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/main/docs/codedeploy.png" alt="urls" width="800">
 
 ### CodePipeline
 
@@ -141,7 +141,7 @@ Optional: You can review details and pipeline events by clicking on *View Events
 
 You should see this if succesful:
 
-<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/master/docs/codepipeline.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/main/docs/codepipeline.png" alt="urls" width="800">
 
 ## Testing deployment
 
@@ -152,7 +152,7 @@ If everything was set up correctly, you should now be able to find your app on t
 3. Check CodeDeploy in the AWS management console to see a new deployment in progress.
 4. Refresh the app page in your browser to see the update.
 
-<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/master/docs/app.png" alt="urls" width="800">
+<img src="https://github.com/geecrypt/nodejs-express-on-aws-ec2/blob/main/docs/app.png" alt="urls" width="800">
 
 ## Create a budget
 
