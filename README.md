@@ -327,11 +327,46 @@ If everything has been successful so far, you have a secure setup of postgres to
     VALUES (2, 'laptop');
     ```
 
-16.  
+## Connect the app to the postgres db
+
+You will need:
+
+* `npm install pg dotenv`
+* `.env` file with db connection details referenced by the `dotenv` package
+
+
+
+# Nginx setup
+
+
+
+# Converting dev app to prod app
+
+
+
+# Other
+
+## Using .env in production
 
 
 
 
+
+
+
+# Common issues
+
+CodeDeploy just stops working.. e.g:
+
+```text
+ApplicationStop failed with exit code 1
+
+The overall deployment failed because too many individual instances failed deployment, too few healthy instances are available for deployment, or some instances in your deployment group are experiencing problems.
+```
+
+Solution: Follow the steps in Felix's video (linked in his original README below). Essentially you need to re-install CodeDeploy then trigger a new deployment by pushing to your repo.
+
+See the AWS CodeDeploy Troubleshooting docs for more [info on ApplicationStop errors](https://docs.aws.amazon.com/codedeploy/latest/userguide/troubleshooting-deployments.html#troubleshooting-deployments-lifecycle-event-failures).
 
 
 
@@ -380,3 +415,4 @@ Uninstall CodeDeploy Agent:
 ```
 sudo yum erase codedeploy-agent
 ```
+
