@@ -168,7 +168,173 @@ You can set up a daily budget to test other alert thresholds.
 3. Set period to daily.
 4. Set usage amount to 4hrs. Now if your EC2 instance is running nonstop, you should get alerts every day. You can modify this once you are confident with how AWS budgets work.
 
-------
+# PostgreSQL Setup
+
+1. Use the **which** command to confirm that the **amazon-linux-extras** package is installed:
+
+   ```bash
+   $ which amazon-linux-extras
+   ```
+
+   Now follow this guide:
+
+   https://techviewleo.com/install-postgresql-13-on-amazon-linux/
+
+2. Enable Postgresql v13
+
+   ```bash
+   $ sudo amazon-linux-extras enable postgresql13
+   ```
+
+3. Install EPEL (needed for PostgreSQL RPMs on a Linux AMI 2 )
+
+   ```bash
+   $ sudo amazon-linux-extras install epel
+   ```
+
+4. Add the PGDG repo to your machine by running this command
+
+   ``` bash
+   $ sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+   [pgdg13]
+   name=PostgreSQL 13 for RHEL/CentOS 7 - x86_64
+   baseurl=https://download.postgresql.org/pub/repos/yum/13/redhat/rhel-7-x86_64
+   enabled=1
+   gpgcheck=0
+   EOF
+   ```
+
+   See also:
+
+   https://wiki.postgresql.org/wiki/YUM_Installation
+
+   https://yum.postgresql.org/repopackages/
+
+5. Install the PostgreSQL client and server
+
+   ```bash
+   $ sudo yum install postgresql13 postgresql13-server
+   ```
+
+6. Generate initial DB config
+
+   ```bash
+   $ sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
+   ```
+
+7. Start the service
+
+   ```bash
+   $ sudo systemctl start postgresql-13
+   $ sudo systemctl enable postgresql-13
+   $ sudo systemctl status postgresql-13
+   ```
+
+8. Login using superuser
+
+   ```bash
+   $ sudo su - postgres
+   ```
+
+9. Edit the `pga_hba.conf` to use password authentication with scram-sha-256
+
+   ```bash
+   $ vi /var/lib/pgsql/13/data/pg_hba.conf 
+   ```
+
+   ```conf
+   # TYPE  DATABASE        USER            ADDRESS                 METHOD
+   
+   # "local" is for Unix domain socket connections only
+   local   all             all                                     scram-sha-256
+   # IPv4 local connections:
+   host    all             all             127.0.0.1/32            scram-sha-256
+   # IPv6 local connections:
+   host    all             all             ::1/128                 scram-sha-256
+   # Allow replication connections from localhost, by a user with the
+   # replication privilege.
+   local   replication     all                                     scram-sha-256
+   host    replication     all             127.0.0.1/32            scram-sha-256
+   host    replication     all             ::1/128                 scram-sha-256
+   ```
+
+   
+
+   Log into the postgres client `psql` with peer (kernel) authentication. This is only possible since we haven't yet restarted the postgres service so our auth change hasn't taken efect.
+
+   ```bash
+   $ psql
+   ```
+
+   Set secure db admin password
+
+   ```psql
+   \password
+   ```
+
+   Enter your new password for default db admin user `postgres`
+
+10. Exit out of psql and restart the postgres service
+
+    ```bash
+    $ sudo systemctl restart postgresql-13.service
+    $ sudo systemctl status postgresql-13.service
+    ```
+
+11.  Try to run `psql` again and you will be prompted for a password
+
+    ```bash
+    -bash-4.2$ psql
+    Password for user postgres: 
+    ```
+
+    Enter your newly created password.
+
+12. Create a less privileged db user for your app to use
+
+    ```psql
+    CREATE ROLE rolename with LOGIN ENCRYPTED PASSWORD 'rolepassword';
+    ```
+
+13. Create a database with the new user as the owner. Easiest is to name the database the same as the role.
+
+    ```bash
+    CREATE DATABASE roledatabase OWNER rolename
+    ```
+
+14. Test that you can access this database as the new role. Logout of the postgres user and login as the new role.
+
+    ```bash
+    $ psql -U rolename
+    ```
+
+
+
+If everything has been successful so far, you have a secure setup of postgres to use with your app!
+
+15. Now create a table and add some data so it can be retrieved from the app. This can be run from within `psql`.
+
+    ```sql
+    CREATE TABLE products (
+    	id SERIAL PRIMARY KEY NOT NULL,
+    	name VARCHAR(255) NOT NULL
+    );
+    
+    INSERT INTO products (id, name)
+    VALUES (1, 'car');
+    
+    INSERT INTO products (id, name)
+    VALUES (2, 'laptop');
+    ```
+
+16.  
+
+
+
+
+
+
+
 ## Felix's original README
 
 This repo hosts the source code for my YouTube tutorial on CI/CD from Github to an AWS EC2 instance via CodePipeline and CodeDeploy (https://www.youtube.com/watch?v=Buh3GjHPmjo). This tutorial uses a node.js express app as an example for the demo.
