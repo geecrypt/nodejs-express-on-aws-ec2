@@ -1,7 +1,12 @@
 const express = require("express");
-require('dotenv').config();
+const path = require("path");
+require('dotenv').config({path: "../../greengrocerenv/.env"});
 const { Pool } = require('pg');
 const app = express();
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'build')));
+app.use(express.static('public'));
 const port = 8081;
 
 let dbParams = {};
@@ -20,9 +25,9 @@ if (process.env.DATABASE_URL) {
 const db = new Pool(dbParams);
 db.connect()
 
-app.get("/", (req, res) => {
-  res.send("<h1>Express Demo App</h1> <h4>Message: Success</h4> <p>Version 1.3</p>");
-});
+// app.get("/", (req, res) => {
+//   res.send("<h1>Express Demo App</h1> <h4>Message: Success</h4> <p>Version 1.3</p>");
+// });
 
 app.get("/api/products", (req, res) => {
   db.query('SELECT * FROM products')

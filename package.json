@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "npm run clean && concurrently \"cd server && npm i && npm start\" \"npm i && npm start\"",
-    "prod": "npm run clean && npm run build && (cd server && npm start)",
+    "prod": "npm run clean && npm i && npm run build && (cd server && npm i && npm start)",
     "reset-db": "cd server && npm run reset-db",
     "clean": "rm -rf build/",
     "start": "react-scripts start",
