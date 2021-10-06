@@ -114,7 +114,7 @@ The next step is to configure the CodeDeploy and CodePipeline services to automa
 4. Set Deployment type to be in-place - the simplest.
 
 5. Select the EC2 instance created earlier.
-6. Configure the deployment configuration to be AllAtOnce - again the simplest. There is no need for any load balancing since we only have one instance.
+6. Configure the deployment configuration to be AllAtOnce - again the simplest. There is n﻿o need for any load balancing since we only have one instance.
 
 7. Create the deployment group!
 
@@ -508,8 +508,33 @@ More info about certbot: https://upcloud.com/community/tutorials/install-lets-en
 
 
 
+# Other
+
+* use `pm2` to monitor app health and relaunch if it crashes
+
+  ```bash
+  $ npm i -g pm2@latest
+  ```
+
+  ```bash
+  $ pm2 start --name greengrocer npm -- run prod --
+  $ pm2 list
+  ```
+
+  To stop and delete processes with pm2
+
+  ```bash
+  $ pm2 stop <pid/appname> && pm2 delete <pid/appname>
+  ```
+
+* websockets is not working on deployed app
+* configure codedeploy for new instance
+
+# Security
+
 # Todo
 
+- [x] setup conditional dotenv config in greengrocer app
 - [ ] 
 
 * [ ] 
