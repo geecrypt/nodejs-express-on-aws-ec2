@@ -186,7 +186,7 @@ You can set up a daily budget to test other alert thresholds.
    $ sudo amazon-linux-extras enable postgresql13
    ```
 
-3. Install EPEL (needed for PostgreSQL RPMs on a Linux AMI 2 )
+3. Install EPEL (Extra Packages for Enterprise Linux) needed for PostgreSQL RPMs on a Linux AMI 2 
 
    ```bash
    $ sudo amazon-linux-extras install epel
@@ -338,13 +338,124 @@ You will need:
 
 # Nginx setup
 
+https://www.nginx.com/resources/wiki/start/topics/tutorials/install/
 
+Following this SO tutorial:
 
-# Converting dev app to prod app
+https://stackoverflow.com/questions/57784287/how-to-install-nginx-on-aws-ec2-linux-2
 
+1. Install Nginx
 
+   ```bash
+   $ sudo amazon-linux-extras install nginx1
+   ```
+
+   
+
+2. Configure Nginx using Digital Ocean's [nginxconfig.io](nginxconfig.io)
+
+* Pay attention to the `Per Website` `Reverse Proxy` config. It should be set to the public IPv4 address with the port that express is running on. Note: this may be not the most secure config...
+
+1. Backup existing Nginx config (we don't have one yet, but is good to backup things)
+
+   ```bash
+   $ mv /etc/nginx /etc/nginx-backup
+   ```
+
+   or (DO's method)
+
+   ```bash
+   $ tar -czvf nginx_$(date +'%F_%H-%M-%S').tar.gz nginx.conf sites-available/ sites-enabled/ nginxconfig.io/
+   ```
+
+2. SCP the config from local machine to server
+
+   ```bash
+   $ scp -i ../"keyfile"  nginxconfig-name server-username@server-ip:/home/ec2-user/
+   ```
+
+3. Copy the config into the nginx config directory
+
+   ```bash
+   $ sudo cp nginxconfig-name /etc/nginx
+   ```
+
+4. Unzip the config
+
+   ```bash
+   $ tar -xzvf nginxconfig.io-ec2-34-223-244-70.us-west-2.compute.amazonaws.com.tar.gz | xargs chmod 0644
+   ```
+
+7. Enable the nginx service
+
+   ```bash
+   $ sudo systemctl status nginx
+   $ sudo systemctl enable nginx
+   $ sudo systemctl status nginx
+   ```
+
+   You may get an error about hashed name size
+
+   ```text
+   nginx: [emerg] could not build server_names_hash, you should increase server_names_hash_bucket_size: 64
+   ```
+
+   To resolve this, edit `/etc/nginx/nginx.conf`
+
+   ```text
+   http {
+   	...
+   	server_names_hash_bucket_size 128;
+   }
+   ```
+
+   
+
+**Note:** Only edit `.conf` files in `sites-available` . [Reference](https://stackoverflow.com/questions/21812360/what-is-the-difference-between-the-sites-enabled-and-sites-available-directo)
+
+8. Reload the config
+
+   ```bash
+   $ sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+If your setup was successful, you should see your app served on port 80 in the browser.
+
+## Add SSL certficate and domain name
+
+1. Configure your security groups to allow your instance to accept connections on the following TCP ports:
+   - SSH (port 22)
+   - HTTP (port 80)
+   - HTTPS (port 443)
+
+3. Buy a domain name off namecheap.com
+4. follow [this guide](https://techgenix.com/namecheap-aws-ec2-linux/) to get a domain name associated with the EC2 instance
+   1. associate an Elastic IP address with the EC2 instance
+   2. create an AWS Route 53 Hosted Zone
+      1. create 2 A records associated with the elastic IP
+         1. domain.com
+         2. www.domain.com
+   3. copy the 4 NS records from Route 53 into the Custom DNS fields of the namecheap domain config
+   4. confirm and wait until the DNS records update
+5. Install certbot (requires EPEL, installed earlier). See https://upcloud.com/community/tutorials/install-lets-encrypt-nginx/
+
+    ```bash
+    $ sudo yum install certbot python2-certbot-nginx
+    ```
+
+6. 
 
 # Other
+
+- [x] change expressapp deployment branch to prod in AWS
+
+## Converting dev app to prod app
+
+- [x] move .env file outside of expressapp folder
+
+## Updating CodeDeploy scripts for greengrocer app architecture
+
+* [x] only need to run 'npm run prod' now since it auto installs node modules
 
 ## Using .env in production
 
