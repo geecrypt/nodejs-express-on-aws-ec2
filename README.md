@@ -350,66 +350,68 @@ https://stackoverflow.com/questions/57784287/how-to-install-nginx-on-aws-ec2-lin
    $ sudo amazon-linux-extras install nginx1
    ```
 
-   
-
 2. Configure Nginx using Digital Ocean's [nginxconfig.io](nginxconfig.io)
 
-* Pay attention to the `Per Website` `Reverse Proxy` config. It should be set to the public IPv4 address with the port that express is running on. Note: this may be not the most secure config...
+Sample config with SSL. If you are trying to test that HTTP works before setting up an SSL certificate, you should modify the nginxconfig to only use HTTP. 
 
-1. Backup existing Nginx config (we don't have one yet, but is good to backup things)
+```text
+https://www.digitalocean.com/community/tools/nginx?domains.0.server.domain=greengrocer.me&domains.0.server.path=%2Fhome%2Fec2-user%2Fexpress-app&domains.0.server.documentRoot=%2Fbuild&domains.0.server.wwwSubdomain=true&domains.0.php.php=false&domains.0.reverseProxy.reverseProxy=true&domains.0.reverseProxy.proxyPass=http%3A%2F%2Flocalhost%3A8081&domains.0.routing.root=false&domains.0.routing.index=index.html&domains.0.routing.fallbackPhp=false&domains.0.restrict.headMethod=true&domains.0.restrict.connectMethod=true&domains.0.restrict.optionsMethod=true&domains.0.restrict.traceMethod=true&global.nginx.user=ec2-user
+```
 
-   ```bash
-   $ mv /etc/nginx /etc/nginx-backup
-   ```
+3. Backup existing Nginx config (we don't have one yet, but is good to backup things)
 
-   or (DO's method)
+```bash
+$ mv /etc/nginx /etc/nginx-backup
+```
 
-   ```bash
-   $ tar -czvf nginx_$(date +'%F_%H-%M-%S').tar.gz nginx.conf sites-available/ sites-enabled/ nginxconfig.io/
-   ```
+or (DO's method)
 
-2. SCP the config from local machine to server
+```bash
+$ tar -czvf nginx_$(date +'%F_%H-%M-%S').tar.gz nginx.conf sites-available/ sites-enabled/ nginxconfig.io/
+```
 
-   ```bash
-   $ scp -i ../"keyfile"  nginxconfig-name server-username@server-ip:/home/ec2-user/
-   ```
+4. SCP the config from local machine to server
 
-3. Copy the config into the nginx config directory
+```bash
+$ scp -i ../"keyfile"  nginxconfig-name server-username@server-ip:/home/ec2-user/
+```
 
-   ```bash
-   $ sudo cp nginxconfig-name /etc/nginx
-   ```
+5. Copy the config into the nginx config directory
 
-4. Unzip the config
+```bash
+$ sudo cp nginxconfig-name /etc/nginx
+```
 
-   ```bash
-   $ tar -xzvf nginxconfig.io-ec2-34-223-244-70.us-west-2.compute.amazonaws.com.tar.gz | xargs chmod 0644
-   ```
+6. Unzip the config
+
+```bash
+$ tar -xzvf nginxconfig.io-ec2-34-223-244-70.us-west-2.compute.amazonaws.com.tar.gz | xargs chmod 0644
+```
 
 7. Enable the nginx service
 
-   ```bash
-   $ sudo systemctl status nginx
-   $ sudo systemctl enable nginx
-   $ sudo systemctl status nginx
-   ```
+```bash
+$ sudo systemctl status nginx
+$ sudo systemctl enable nginx
+$ sudo systemctl status nginx
+```
 
-   You may get an error about hashed name size
+You may get an error about hashed name size
 
-   ```text
-   nginx: [emerg] could not build server_names_hash, you should increase server_names_hash_bucket_size: 64
-   ```
+```text
+nginx: [emerg] could not build server_names_hash, you should increase server_names_hash_bucket_size: 64
+```
 
-   To resolve this, edit `/etc/nginx/nginx.conf`
+To resolve this, edit `/etc/nginx/nginx.conf`
 
-   ```text
-   http {
-   	...
-   	server_names_hash_bucket_size 128;
-   }
-   ```
+```text
+http {
+	...
+	server_names_hash_bucket_size 128;
+}
+```
 
-   
+
 
 **Note:** Only edit `.conf` files in `sites-available` . [Reference](https://stackoverflow.com/questions/21812360/what-is-the-difference-between-the-sites-enabled-and-sites-available-directo)
 
@@ -437,31 +439,80 @@ If your setup was successful, you should see your app served on port 80 in the b
          2. www.domain.com
    3. copy the 4 NS records from Route 53 into the Custom DNS fields of the namecheap domain config
    4. confirm and wait until the DNS records update
-5. Install certbot (requires EPEL, installed earlier). See https://upcloud.com/community/tutorials/install-lets-encrypt-nginx/
+4. Install certbot (requires EPEL, installed earlier). See https://upcloud.com/community/tutorials/install-lets-encrypt-nginx/
 
     ```bash
     $ sudo yum install certbot python2-certbot-nginx
     ```
 
-6. 
 
-# Other
+Continue following the guide at nginxconfig.io to setup SSL
 
-- [x] change expressapp deployment branch to prod in AWS
+5. Generate **Diffie-Hellman keys** by running this command on your server:
 
-## Converting dev app to prod app
+   ```bash
+   openssl dhparam -out /etc/nginx/dhparam.pem 2048
+   ```
 
-- [x] move .env file outside of expressapp folder
+6. Create a common **ACME-challenge** directory (for **Let's Encrypt**):
 
-## Updating CodeDeploy scripts for greengrocer app architecture
+```bash
+mkdir -p /var/www/_letsencrypt
+```
 
-* [x] only need to run 'npm run prod' now since it auto installs node modules
+```bash
+chown ec2-user /var/www/_letsencrypt
+```
 
-## Using .env in production
+7. Comment out SSL related directives in the configuration:
+
+```bash
+sed -i -r 's/(listen .*443)/\1; #/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g; s/(server \{)/\1\n    ssl off;/g' /etc/nginx/sites-available/greengrocer.me.conf
+```
+
+8. Reload your NGINX server:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+9. Obtain SSL certificates from Let's Encrypt using Certbot:
+
+```bash
+certbot certonly --webroot -d greengrocer.me -d www.greengrocer.me --email info@greengrocer.me -w /var/www/_letsencrypt -n --agree-tos --force-renewal
+```
+
+10. Uncomment SSL related directives in the configuration:
+
+```bash
+sed -i -r -z 's/#?; ?#//g; s/(server \{)\n    ssl off;/\1/g' /etc/nginx/sites-available/greengrocer.me.conf
+```
+
+11. Reload your NGINX server:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+12. Configure Certbot to reload NGINX when it successfully renews certificates:
+
+```bash
+echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
+```
+
+```bash
+sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
+```
+
+More info about certbot: https://upcloud.com/community/tutorials/install-lets-encrypt-nginx/
 
 
 
+# Todo
 
+- [ ] 
+
+* [ ] 
 
 
 
